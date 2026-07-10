@@ -1,0 +1,27 @@
+:root {
+    /* Color Tokens (Telegram + Material 3 Light + Apple Clean UI) */
+    --bg-app: #f4f6f8;
+    --bg-surface: #ffffff;
+    --text-primary: #1c1c1e;
+    --text-secondary: #7c7c80;
+    
+    --color-primary: #007aff;
+    --color-success: #34c759;
+    --color-danger: #ff3b30;
+    --color-warning: #ff9500;
+    
+    --border-light: #e5e5ea;
+    
+    /* Layout & Polish */
+    --radius-sm: 10px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-full: 9999px;
+    
+    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.02), 0 1px 4px rgba(0, 0, 0, 0.01);
+    --shadow-input: 0 0 0 3px rgba(0, 122, 255, 0.15);
+    
+    /* Animation Timing */
+    --transition-bounce: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    --transition-smooth: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}

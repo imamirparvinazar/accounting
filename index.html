@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>مدیریت مالی هوشمند</title>
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="stylesheet" href="./assets/css/variables.css">
+    <link rel="stylesheet" href="./assets/css/global.css">
+    <link rel="stylesheet" href="./assets/css/layout.css">
+    <link rel="stylesheet" href="./assets/css/wizard.css">
+</head>
+<body>
+
+    <!-- Main App Container -->
+    <main id="app-container">
+        
+        <!-- DASHBOARD VIEW -->
+        <section id="view-dashboard" class="app-view active">
+            <header class="view-header">
+                <h1 id="current-persian-date">امروز</h1>
+                <span class="badge badge-info" id="emergency-badge" style="display:none;">حالت اضطراری فعال</span>
+            </header>
+            
+            <!-- Balance Card -->
+            <div class="card balance-card">
+                <div class="balance-label">موجودی کل کل (تومان)</div>
+                <div class="balance-amount" id="dash-total-balance">۰</div>
+                <div class="balance-grid">
+                    <div class="balance-item">
+                        <span class="dot dot-profit"></span>
+                        <small>درآمد ماه</small>
+                        <div class="text-profit" id="dash-month-income">۰</div>
+                    </div>
+                    <div class="balance-item">
+                        <span class="dot dot-loss"></span>
+                        <small>هزینه ماه</small>
+                        <div class="text-loss" id="dash-month-expense">۰</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emergency Status Callout if active -->
+            <div id="dash-emergency-callout" class="card emergency-callout" style="display:none;">
+                <h3>⚠️ وضعیت اضطراری نقدینگی</h3>
+                <p id="dash-emergency-text">روزانه مجاز به خرج موندن: ۰ تومان</p>
+                <div class="progress-container">
+                    <div class="progress-bar" id="dash-emergency-progress"></div>
+                </div>
+            </div>
+
+            <!-- Quick Stats Row -->
+            <div class="stats-row">
+                <div class="card stat-card">
+                    <small>سود خالص</small>
+                    <div id="dash-net-profit" class="stat-val">۰</div>
+                </div>
+                <div class="card stat-card">
+                    <small>بودجه‌های فعال</small>
+                    <div id="dash-active-budgets" class="stat-val">۰</div>
+                </div>
+            </div>
+
+            <!-- Real-time Chart Block -->
+            <div class="card chart-card">
+                <h3>خلاصه وضعیت مالی</h3>
+                <canvas id="dashboardChart" width="400" height="180"></canvas>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="section-title">۵ تراکنش آخر</div>
+            <div class="card list-card" id="dash-recent-tx">
+                <div class="empty-state">هنوز تراکنشی ثبت نشده است.</div>
+            </div>
+        </section>
+
+        <!-- WALLETS VIEW -->
+        <section id="view-wallets" class="app-view">
+            <header class="view-header">
+                <h1>کیف پول‌های شما</h1>
+                <button class="btn-icon" id="btn-add-wallet">＋</button>
+            </header>
+            <div class="wallets-grid" id="wallets-container">
+                <!-- Dynamic Content -->
+            </div>
+        </section>
+
+        <!-- WIZARD VIEW (TRANSACTION CREATOR) -->
+        <section id="view-wizard" class="app-view">
+            <div class="wizard-container card">
+                <div class="wizard-header">
+                    <button class="btn-back" id="wizard-back">✕ انصراف</button>
+                    <div class="wizard-progress">
+                        <div class="wizard-progress-fill" id="wizard-progress-bar"></div>
+                    </div>
+                </div>
+
+                <div class="wizard-track" id="wizard-track">
+                    <!-- Step 1: Type -->
+                    <div class="wizard-step active" data-step="1">
+                        <h2>نوع تراکنش را انتخاب کنید</h2>
+                        <div class="options-vertical">
+                            <button class="btn-option" data-field="type" data-value="expense">💸 هزینه</button>
+                            <button class="btn-option" data-field="type" data-value="income">💰 درآمد</button>
+                            <button class="btn-option" data-field="type" data-value="transfer">🔄 انتقال بین حساب‌ها</button>
+                            <button class="btn-option" data-field="type" data-value="installment">🗓️ پرداخت قسط</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Amount -->
+                    <div class="wizard-step" data-step="2">
+                        <h2>مبلغ تراکنش (تومان)</h2>
+                        <input type="number" id="wiz-amount" class="input-massive" placeholder="۰" inputmode="numeric">
+                        <div class="wizard-nav">
+                            <button class="btn-secondary wiz-prev">قبلی</button>
+                            <button class="btn-primary wiz-next" id="wiz-btn-amount">بعدی</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Source Wallet -->
+                    <div class="wizard-step" data-step="3">
+                        <h2>منبع مالی / کیف پول مقصد یا مبدا</h2>
+                        <div class="options-vertical" id="wiz-wallets-list">
+                            <!-- Populated via JS -->
+                        </div>
+                        <div class="wizard-nav">
+                            <button class="btn-secondary wiz-prev">قبلی</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Category -->
+                    <div class="wizard-step" data-step="4">
+                        <h2>دسته‌بندی</h2>
+                        <div class="options-grid" id="wiz-categories-list">
+                            <!-- Populated via JS -->
+                        </div>
+                        <div class="wizard-nav">
+                            <button class="btn-secondary wiz-prev">قبلی</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 5: Description & Save -->
+                    <div class="wizard-step" data-step="5">
+                        <h2>توضیحات تکمیلی (اختیاری)</h2>
+                        <textarea id="wiz-description" class="input-text" placeholder="بنویسید..."></textarea>
+                        <div class="wizard-nav">
+                            <button class="btn-secondary wiz-prev">قبلی</button>
+                            <button class="btn-success" id="wiz-submit">ثبت نهایی تراکنش ✨</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- BUDGETS VIEW -->
+        <section id="view-budgets" class="app-view">
+            <header class="view-header">
+                <h1>بودجه‌بندی و تعهدات</h1>
+                <button class="btn-icon" id="btn-add-budget">＋</button>
+            </header>
+            <div class="tabs-header">
+                <button class="tab-btn active" data-tab="personal">شخصی</button>
+                <button class="tab-btn" data-tab="loans">وام و اقساط</button>
+                <button class="tab-btn" data-tab="cheques">چک‌ها</button>
+            </div>
+            <div class="tab-content" id="budgets-container">
+                <!-- Content injected by JS -->
+            </div>
+        </section>
+
+        <!-- SHOP VIEW -->
+        <section id="view-shop" class="app-view">
+            <header class="view-header">
+                <h1>حسابداری فروشگاه</h1>
+            </header>
+            <div class="card shop-metrics">
+                <div class="balance-grid">
+                    <div class="balance-item">
+                        <small>فروش کل</small>
+                        <div class="text-profit" id="shop-total-sales">۰</div>
+                    </div>
+                    <div class="balance-item">
+                        <small>خرید و هزینه‌ها</small>
+                        <div class="text-loss" id="shop-total-expenses">۰</div>
+                    </div>
+                </div>
+                <hr>
+                <div style="text-align: center; padding-top: 10px;">
+                    <small>سود خالص فروشگاه</small>
+                    <div class="balance-amount text-info" id="shop-net-profit">۰</div>
+                </div>
+            </div>
+            
+            <div class="section-title">ثبت سریع رویداد فروشگاهی</div>
+            <div class="card form-card">
+                <div class="options-grid" style="margin-bottom: 12px;">
+                    <button class="btn-secondary active" id="shop-action-sale">📥 ثبت فروش</button>
+                    <button class="btn-secondary" id="shop-action-expense">📤 خرید/هزینه</button>
+                </div>
+                <input type="number" id="shop-amount" class="input-text" placeholder="مبلغ (تومان)" inputmode="numeric">
+                <input type="text" id="shop-desc" class="input-text" placeholder="بابت...">
+                <button class="btn-primary" id="btn-shop-submit" style="width: 100%; margin-top: 8px;">ثبت رویداد</button>
+            </div>
+        </section>
+
+        <!-- EMERGENCY VIEW -->
+        <section id="view-emergency" class="app-view">
+            <header class="view-header">
+                <h1>حالت اضطراری نقدینگی</h1>
+            </header>
+            <div class="card info-card">
+                <p>با فعال‌سازی این بخش، برنامه موجودی شما را تا یک تاریخ مشخص قرنطینه کرده و سهمیه خرج‌کرد روزانه فوق‌العاده دقیقی به شما می‌دهد تا قبل از پایان ماه یا موعد مقرر بی‌پول نشوید.</p>
+            </div>
+            <div class="card form-card">
+                <label>انتخاب کیف پول مبدا</label>
+                <select id="emergency-wallet-select" class="input-text"></select>
+                
+                <label>تاریخ پایان دوره قرنطینه</label>
+                <input type="date" id="emergency-target-date" class="input-text">
+                
+                <button class="btn-loss" id="btn-toggle-emergency" style="width: 100%; margin-top: 15px; padding: 14px;">فعال‌سازی حالت اضطراری 🚨</button>
+            </div>
+        </section>
+
+        <!-- SETTINGS VIEW -->
+        <section id="view-settings" class="app-view">
+            <header class="view-header">
+                <h1>تنظیمات برنامه</h1>
+            </header>
+            <div class="card list-card">
+                <div class="settings-item">
+                    <span>واحد پول پیش‌فرض</span>
+                    <strong>تومان</strong>
+                </div>
+                <div class="settings-item">
+                    <span>تم نمایشی</span>
+                    <strong>روشن / خودکار</strong>
+                </div>
+            </div>
+            
+            <div class="section-title">پشتیبان‌گیری از داده‌ها</div>
+            <div class="card options-vertical">
+                <button class="btn-secondary" id="btn-export-json">📤 خروجی کامل JSON</button>
+                <button class="btn-secondary" id="btn-import-json" style="position: relative;">
+                    📥 بارگذاری نسخه پشتیبان
+                    <input type="file" id="file-import" style="position: absolute; opacity: 0; left: 0; top: 0; width: 100%; height: 100%; cursor: pointer;">
+                </button>
+                <button class="btn-loss" id="btn-reset-db" style="margin-top: 20px;">🚨 پاکسازی کل اطلاعات برنامه</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Global Floating Action Button for Wizard -->
+    <button id="fab-trigger-wizard" class="fab-btn">＋</button>
+
+    <!-- Bottom Navigation Bar -->
+    <nav id="bottom-nav">
+        <button class="nav-item active" data-view="dashboard">
+            <span class="nav-icon">📊</span>
+            <span class="nav-label">داشبورد</span>
+        </button>
+        <button class="nav-item" data-view="wallets">
+            <span class="nav-icon">💳</span>
+            <span class="nav-label">کیف پول</span>
+        </button>
+        <button class="nav-item" data-view="budgets">
+            <span class="nav-icon">🎯</span>
+            <span class="nav-label">بودجه</span>
+        </button>
+        <button class="nav-item" data-view="shop">
+            <span class="nav-icon">🏪</span>
+            <span class="nav-label">فروشگاه</span>
+        </button>
+        <button class="nav-item" data-view="emergency">
+            <span class="nav-icon">🚨</span>
+            <span class="nav-label">اضطراری</span>
+        </button>
+        <button class="nav-item" data-view="settings">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">تنظیمات</span>
+        </button>
+    </nav>
+
+    <!-- Modals Structure -->
+    <div class="modal-overlay" id="wallet-modal">
+        <div class="modal card">
+            <h2>ایجاد کیف پول جدید</h2>
+            <input type="text" id="wallet-name" class="input-text" placeholder="نام کیف پول (مثلا کارت ملی)">
+            <input type="number" id="wallet-balance" class="input-text" placeholder="موجودی اولیه (تومان)" inputmode="numeric">
+            <select id="wallet-type" class="input-text">
+                <option value="bank_card">💳 کارت بانکی</option>
+                <option value="cash">💵 پول نقد</option>
+                <option value="bank_account">🏦 حساب بانکی</option>
+                <option value="crypto">🌐 کیف پول دیجیتال</option>
+            </select>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="btn-close-wallet-modal">انصراف</button>
+                <button class="btn-primary" id="btn-save-wallet">ذخیره کیف پول</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./assets/js/app.js"></script>
+</body>
+</html>

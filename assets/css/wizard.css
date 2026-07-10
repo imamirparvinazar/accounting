@@ -1,0 +1,96 @@
+.wizard-container {
+    position: relative;
+    overflow: hidden;
+    padding: 24px;
+    min-height: 420px;
+}
+
+.wizard-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
+    gap: 16px;
+}
+
+.btn-back {
+    background: none;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.wizard-progress {
+    flex: 1;
+    height: 6px;
+    background: var(--border-light);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.wizard-progress-fill {
+    height: 100%;
+    background: var(--color-primary);
+    width: 20%;
+    transition: width var(--transition-smooth);
+}
+
+.wizard-track {
+    display: flex;
+    transition: transform var(--transition-bounce);
+    width: 500%; /* 5 Steps */
+}
+
+.wizard-step {
+    width: 20%; /* Exactly 1 part of track */
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity var(--transition-smooth);
+    pointer-events: none;
+}
+
+.wizard-step.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.wizard-step h2 {
+    font-size: 20px;
+    margin-bottom: 20px;
+    color: var(--text-primary);
+}
+
+.options-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.btn-option {
+    width: 100%;
+    background: var(--bg-app);
+    padding: 16px;
+    text-align: right;
+    font-size: 15px;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+}
+.btn-option:hover, .btn-option.selected {
+    background: rgba(0, 122, 255, 0.08);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.wizard-nav {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+    gap: 12px;
+}
+.wizard-nav button {
+    flex: 1;
+}
